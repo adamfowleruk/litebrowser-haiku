@@ -1,5 +1,6 @@
 #include "App.h"
 #include "MainWindow.h"
+#include "../litehtml/include/litehtml.h"
 
 char master_css[] = 
 {

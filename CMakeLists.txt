@@ -20,17 +20,13 @@ set(CONTAINER_PATH ${LITEHTML_PATH}/containers/haiku)
 
 #pkg_check_modules(LB_LIBS REQUIRED fontconfig gdkmm-3.0 gtkmm-3.0 libcurl cairo)
 
-find_package(Poco REQUIRED Foundation)
-
 set(SOURCE  ${LITEBROWSER_PATH}/App.cpp
             ${CONTAINER_PATH}/container_haiku.cpp
             ${LITEBROWSER_PATH}/MainWindow.cpp
-            ${LITEBROWSER_PATH}/LiteHtmlView.cpp
     )
 
 set(HEADERS ${LITEBROWSER_PATH}/MainWindow.h
             ${LITEBROWSER_PATH}/App.h
-            ${LITEBROWSER_PATH}/LiteHtmlView.h
             ${CONTAINER_PATH}/container_haiku.h
     )
 
@@ -50,5 +46,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
         C_STANDARD 99
         )
 
-target_link_libraries(litebrowser litehtml be) # ${LB_LIBS_LIBRARIES}
+target_link_libraries(litebrowser litehtml be localestub translation) # ${LB_LIBS_LIBRARIES}
 
