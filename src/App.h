@@ -7,7 +7,7 @@
 class App : public BApplication
 {
 public:
-	App(litehtml::context* ctx);
+	App(litehtml::context* ctx, const char *name);
 };
 
 #endif

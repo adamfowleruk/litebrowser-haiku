@@ -17,7 +17,7 @@ mkdir build
 cd build
 cmake ..
 make
-./litebrowser
+./litebrowser /path/to/my/file.html
 ```
 
 Note: Git pull and git submodule update are there as you will need to execute these

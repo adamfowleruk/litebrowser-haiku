@@ -8,10 +8,14 @@ char master_css[] =
 ,0
 };
 
-App::App(litehtml::context* ctx)
+App::App(litehtml::context* ctx,const char* filePath)
 	:	BApplication("application/x-vnd.af-litebrowser")
 {
 	MainWindow *mainwin = new MainWindow(ctx);
+	if (NULL != filePath)
+	{
+		mainwin->LoadFile(filePath);
+	}
 	mainwin->Show();
 }
 
@@ -20,7 +24,12 @@ int main (int argc, char *argv[])
 	litehtml::context html_context;
 	html_context.load_master_stylesheet(master_css);
 
-	App *app = new App(&html_context);
+	const char* filePath = NULL;
+	if (argc > 1)
+	{
+		filePath = argv[1];
+	}
+	App *app = new App(&html_context,filePath);
 	app->Run();
 	delete app;
 	return 0;

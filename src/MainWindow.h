@@ -12,11 +12,21 @@ public:
 						MainWindow(litehtml::context* ctx);
 			void		MessageReceived(BMessage *msg);
 			bool		QuitRequested(void);
-	virtual void		ScreenChanged(BRect	screenSize, color_space	depth) override;
 			
+	// Unique to this class
+			void		LoadFile(const char* filePath);
+			
+	// BWindow
+	virtual void		ScreenChanged(BRect	screenSize, color_space	depth) override;
+	virtual void		FrameResized(float newWidth, float newHeight);
+
+protected:
+	virtual	void		UpdateScrollbars();
 private:
 	litehtml::context*	fContext;
 	LiteHtmlView* 		fHtmlView;
+	BScrollBar* 		vScroll;
+	BScrollBar* 		hScroll;
 };
 
 #endif
