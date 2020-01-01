@@ -1,10 +1,21 @@
+/*
+ * Copyright 2019-2020 Haiku Inc.
+ * All rights reserved. Distributed under the terms of the MIT license.
+ * Constributors
+ * 2019-2020	Adam Fowler <adamfowleruk@gmail.com>
+ */
 #include "MainWindow.h"
 
 #include <iostream>
 
 #include <Application.h>
+#include <UrlContext.h>
+#include <UrlRequest.h>
+#include <UrlProtocolRoster.h>
+#include <UrlProtocolDispatchingListener.h>
 #include <LayoutBuilder.h>
 #include <ScrollBar.h>
+#include <String.h>
 #include <Window.h>
 #include <TextView.h>
 
@@ -13,7 +24,11 @@
 
 MainWindow::MainWindow(litehtml::context* ctx)
 	:	BWindow(BRect(100,100,500,400),"litebrowser",B_DOCUMENT_WINDOW, B_NOT_ZOOMABLE),
-	fContext(ctx)
+	fContext(ctx),
+	fHtmlView(NULL),
+	vScroll(NULL),
+	hScroll(NULL),
+	fDataReceived()
 {
 	BRect bounds(Bounds());
 	// change bounds for scrollbar size
@@ -70,11 +85,46 @@ MainWindow::MainWindow(litehtml::context* ctx)
 }
 
 void
-MainWindow::LoadFile(const char* filePath)
+MainWindow::Load(const char* filePathOrUrl)
 {
 	//fHtmlView->RenderFile("/boot/home/git/Paladin/Documentation/Paladin Documentation.html");
-	fHtmlView->RenderFile(filePath);
 	//fHtmlView->RenderFile("/boot/home/git/test.html");
+	BUrl url(filePathOrUrl);
+	if (!url.IsValid())
+	{
+		std::cout << "  Loading file" << std::endl;
+		// assume a local file name has been provided
+		fHtmlView->RenderFile(filePathOrUrl);
+	} else {
+		// Fetch remote file according to protocol
+		BString protocol = url.Protocol();
+		// Note: file:// is also supported, but seems heavy weight to use
+		if ("file" == protocol)
+		{
+			std::cout << "  Loading file (file://)" << std::endl;
+			fHtmlView->RenderFile(filePathOrUrl); // as above
+			return;
+		} else {
+			std::cout << "  Loading protocol: " << protocol << std::endl;
+			// Go fetch it...
+			BUrlContext* context = new BUrlContext();
+			BUrlProtocolDispatchingListener* listener = 
+				new BUrlProtocolDispatchingListener(this);
+			fDataReceived = "";
+			BUrlRequest* req = BUrlProtocolRoster::MakeRequest(
+				url,listener,context);
+			if (NULL != req)
+			{
+				std::cout << "  Request created. Dispatching." << std::endl;
+				// do nothing other than return - handled by MessageReceived
+				req->Run();
+				return;
+			}
+		}
+		std::cout << "Unknown protocol '" << protocol 
+				  << "' for url: '" << filePathOrUrl 
+				  << "'. Not rendering." << std::endl;
+	}
 }
 
 
@@ -82,8 +132,44 @@ void
 MainWindow::MessageReceived(BMessage *msg)
 {
 	int32 originalWhat;
+	int8 protocolWhat;
+	BString str;
 	switch (msg->what)
 	{
+		case B_URL_PROTOCOL_NOTIFICATION:
+		{
+			//std::cout << "  UrlRequest update received" << std::endl;
+			// data loading, request finished, or download progress
+			if (B_OK == msg->FindInt8("be:urlProtocolMessageType",&protocolWhat))
+			{
+				switch (protocolWhat)
+				{
+					// TODO don't assume it's just a web page data
+					//      - could be image, css, etc.
+					case B_URL_PROTOCOL_DATA_RECEIVED:
+					{
+						//std::cout << "  Data received" << std::endl;
+						if (B_OK == msg->FindString("url:data",&str))
+						{
+							fDataReceived += str;
+						}
+						break;
+					}
+					case B_URL_PROTOCOL_REQUEST_COMPLETED:
+					{
+						std::cout << "  BUrlRequest complete" << std::endl;
+						// TODO check success flag
+						fHtmlView->RenderHTML(fDataReceived);
+						break;
+					}
+					default:
+					{
+						// ignore
+					}
+				}
+			}
+			break;
+		}
 		case B_OBSERVER_NOTICE_CHANGE:
 		{
 			if (B_OK == msg->FindInt32(B_OBSERVE_ORIGINAL_WHAT,&originalWhat))

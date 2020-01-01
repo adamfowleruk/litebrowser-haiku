@@ -46,5 +46,5 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
         C_STANDARD 99
         )
 
-target_link_libraries(litebrowser litehtml be localestub translation) # ${LB_LIBS_LIBRARIES}
+target_link_libraries(litebrowser litehtml be localestub translation bnetapi) # ${LB_LIBS_LIBRARIES}
 

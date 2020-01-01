@@ -1,3 +1,9 @@
+/*
+ * Copyright 2019-2020 Haiku Inc.
+ * All rights reserved. Distributed under the terms of the MIT license.
+ * Constributors
+ * 2019-2020	Adam Fowler <adamfowleruk@gmail.com>
+ */
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
@@ -14,19 +20,22 @@ public:
 			bool		QuitRequested(void);
 			
 	// Unique to this class
-			void		LoadFile(const char* filePath);
+			void		Load(const char* filePathOrUrl);
 			
-	// BWindow
+	// BWindow overrides
 	virtual void		ScreenChanged(BRect	screenSize, color_space	depth) override;
-	virtual void		FrameResized(float newWidth, float newHeight);
+	virtual void		FrameResized(float newWidth, float newHeight) override;
 
 protected:
+	// Internal and unique to this class
 	virtual	void		UpdateScrollbars();
+	
 private:
 	litehtml::context*	fContext;
 	LiteHtmlView* 		fHtmlView;
 	BScrollBar* 		vScroll;
 	BScrollBar* 		hScroll;
+	std::string			fDataReceived;
 };
 
 #endif
